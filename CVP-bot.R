@@ -3,7 +3,27 @@ library(Lahman)
 library(tidyverse)
 library(dslabs)
 library(rtweet)
-library(tidytext)
+
+
+twitter_keys <- read_csv("api_keys.csv")
+
+appname <- twitter_keys$appname
+key <- twitter_keys$api_key
+secret <- twitter_keys$api_secret
+access_token <- twitter_keys$access_token
+access_secret <- twitter_keys$access_secret
+
+# create token named "twitter_token"
+twitter_token <- create_token(
+  app = appname,
+  consumer_key = key,
+  consumer_secret = secret,
+  access_token = access_token,
+  access_secret = access_secret)
+
+post_tweet("This is a test tweet. 
+           ███░░░░░░░░░░░░░░░░░")
+
 
 # Load data from Health Canada
 url <- "https://health-infobase.canada.ca/src/data/covidLive/vaccination-coverage-map.csv"
