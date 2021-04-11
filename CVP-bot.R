@@ -1,6 +1,9 @@
+# Load libraries and packages
 library(Lahman)
 library(tidyverse)
 library(dslabs)
+library(rtweet)
+library(tidytext)
 
 # Load data from Health Canada
 url <- "https://health-infobase.canada.ca/src/data/covidLive/vaccination-coverage-map.csv"
