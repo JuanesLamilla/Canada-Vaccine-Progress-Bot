@@ -39,4 +39,4 @@ vignettes/*.pdf
 .Renviron
 
 # API keys
-./api_keys.csv
+api_keys.csv
