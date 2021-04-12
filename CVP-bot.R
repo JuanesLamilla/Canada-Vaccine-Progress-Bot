@@ -1,7 +1,5 @@
 # Load libraries and packages
-library(Lahman)
 library(tidyverse)
-library(dslabs)
 library(rtweet)
 
 
