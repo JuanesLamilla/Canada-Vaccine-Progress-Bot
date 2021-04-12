@@ -89,37 +89,43 @@ plot_dose_percentages <- function(prv_name) {
   
 }
 
-
-tmp <- tempfile(fileext = ".jpeg")
-jpeg(tmp,
-     width=1200 , height=675)
-plot_dose_percentages("Canada")
-dev.off()
-
-
-post_tweet("\U0001F1E8\U0001F1E6 CANADA Vaccination Progress
+tweet_can <- function () {
+  
+  tmp <- tempfile(fileext = ".jpeg")
+  jpeg(tmp,
+       width=1200 , height=675)
+  plot_dose_percentages("Canada")
+  dev.off()
+  
+  
+  post_tweet("\U0001F1E8\U0001F1E6 CANADA Vaccination Progress
            
            At this rate, CANADA will reach 70% will have their first dose by ", media = tmp)
+  
+  ## lookup status_id
+  my_timeline <- get_timeline(rtweet:::home_user())
+  
+  ## ID for reply
+  reply_id <- my_timeline$status_id[1]
+  
+  temp2 <- tempfile(fileext = ".jpeg")
+  jpeg(temp2,
+       width=1200 , height=675)
+  plot_dose_percentages("Yukon")
+  dev.off()
+  
+  ## post reply
+  post_tweet("second in the thread",
+             media = temp2,
+             in_reply_to_status_id = reply_id)
+  
+}
 
-## lookup status_id
-my_timeline <- get_timeline(rtweet:::home_user())
 
-## ID for reply
-reply_id <- my_timeline$status_id[1]
+plot_dose_percentages("Canada")
 
-temp2 <- tempfile(fileext = ".jpeg")
-jpeg(temp2,
-     width=1200 , height=675)
-plot_dose_percentages("Yukon")
-dev.off()
-
-## post reply
-post_tweet("second in the thread",
-           media = temp2,
-           in_reply_to_status_id = reply_id)
-
-
-
+can_dates <- dat[dat$prename == "Canada", ] %>%
+        mutate(date_as_num = as.numeric(week_end))
 
 
 
