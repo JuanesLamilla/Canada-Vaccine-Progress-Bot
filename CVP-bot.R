@@ -43,7 +43,7 @@ dates <- rev(unique(dat$week_end))
 
 format_value <- function(key, val) {
   sprintf(
-    "%s: %d%%",
+    "%s: %g%%",
     key, val)
 }
 
@@ -52,8 +52,8 @@ plot_dose_percentages <- function(prv_name) {
   
   
   # Get latest percent wide percent
-  latest_percent_first <- round(dat[dat$prename == prv_name & dat$week_end == dates[1], ]$proptotal_atleast1dose, digits = 0)
-  latest_percent_both <- round(dat[dat$prename == prv_name & dat$week_end == dates[1], ]$proptotal_2doses, digits = 0)
+  latest_percent_first <- round(dat[dat$prename == prv_name & dat$week_end == dates[1], ]$proptotal_atleast1dose, digits = 2)
+  latest_percent_both <- round(dat[dat$prename == prv_name & dat$week_end == dates[1], ]$proptotal_2doses, digits = 2)
   
   
   
@@ -100,7 +100,7 @@ tweet_can <- function () {
   
   post_tweet("\U0001F1E8\U0001F1E6 CANADA Vaccination Progress
            
-           At this rate, CANADA will reach 70% will have their first dose by ", media = tmp)
+           At this weeks rate, 70% of CANADA will have their first dose on Sept. 7th, 2020", media = tmp)
   
   ## lookup status_id
   my_timeline <- get_timeline(rtweet:::home_user())
@@ -124,10 +124,46 @@ tweet_can <- function () {
 
 plot_dose_percentages("Canada")
 
-can_dates <- dat[dat$prename == "Canada", ] %>%
-        mutate(date_as_num = as.numeric(week_end))
+pred_date_first_dose <- function(prv_name, percent=70, weeks_used=2) {
+  # Returns the predicted date for when "percent"% of the population of 'prv_name'
+  # will have receieved their first dose. Uses a linear regression with data of the
+  # past 'weeks_used' weeks.
+  
+  can_dates <- dat[dat$prename == prv_name, ] %>%
+    mutate(date_as_num = as.numeric(week_end)) %>%
+    tail(n=(weeks_used + 1))
+  
+  can_dates %>% summarize(r = cor(date_as_num, proptotal_atleast1dose)) %>% pull(r)
+  
+  # calculate values to plot regression line on original data
+  mu_x <- mean(can_dates$date_as_num)
+  mu_y <- mean(can_dates$proptotal_atleast1dose)
+  s_x <- sd(can_dates$date_as_num)
+  s_y <- sd(can_dates$proptotal_atleast1dose)
+  r <- cor(can_dates$date_as_num, can_dates$proptotal_atleast1dose)
+  m <- r * s_y/s_x
+  b <- mu_y - m*mu_x
+  
+  # add regression line to plot
+  # can_dates %>%
+  #   ggplot(aes(date_as_num, proptotal_atleast1dose)) +
+  #   geom_point(alpha = 0.5) +
+  #   geom_abline(intercept = b, slope = m) +
+  #   coord_cartesian(ylim=c(0,100), xlim=c(18250, 19000))
+  
+  date_pred <- as.Date((percent - b)/m, origin="1970-01-01")
+  format(date_pred, "%b. %y, %Y")  
+  
+}
 
+format_tweet_text <- function(prv_name, date) {
+  sprintf(
+    "\U0001F1E8\U0001F1E6 %s Vaccination Progress
+           
+           At this weeks rate, 70%% of %s will have their first dose on %s",
+    prv_name, prv_name, date)
+}
 
-
-
-
+date <- pred_date_first_dose("Canada")
+format_tweet_text("Canada", date)
+ 
