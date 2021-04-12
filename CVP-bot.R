@@ -89,41 +89,6 @@ plot_dose_percentages <- function(prv_name) {
   
 }
 
-tweet_can <- function () {
-  
-  tmp <- tempfile(fileext = ".jpeg")
-  jpeg(tmp,
-       width=1200 , height=675)
-  plot_dose_percentages("Canada")
-  dev.off()
-  
-  
-  post_tweet("\U0001F1E8\U0001F1E6 CANADA Vaccination Progress
-           
-           At this weeks rate, 70% of CANADA will have their first dose on Sept. 7th, 2020", media = tmp)
-  
-  ## lookup status_id
-  my_timeline <- get_timeline(rtweet:::home_user())
-  
-  ## ID for reply
-  reply_id <- my_timeline$status_id[1]
-  
-  temp2 <- tempfile(fileext = ".jpeg")
-  jpeg(temp2,
-       width=1200 , height=675)
-  plot_dose_percentages("Yukon")
-  dev.off()
-  
-  ## post reply
-  post_tweet("second in the thread",
-             media = temp2,
-             in_reply_to_status_id = reply_id)
-  
-}
-
-
-plot_dose_percentages("Canada")
-
 pred_date_first_dose <- function(prv_name, percent=70, weeks_used=2) {
   # Returns the predicted date for when "percent"% of the population of 'prv_name'
   # will have receieved their first dose. Uses a linear regression with data of the
@@ -156,14 +121,39 @@ pred_date_first_dose <- function(prv_name, percent=70, weeks_used=2) {
   
 }
 
-format_tweet_text <- function(prv_name, date) {
+format_tweet_text <- function(prv_name) {
+  date <- pred_date_first_dose(prv_name)
+  
   sprintf(
     "\U0001F1E8\U0001F1E6 %s Vaccination Progress
-           
-           At this weeks rate, 70%% of %s will have their first dose on %s",
+    
+    At this rate, 70%% of %s will have their first dose on %s",
     prv_name, prv_name, date)
 }
 
-date <- pred_date_first_dose("Canada")
-format_tweet_text("Canada", date)
+tmp <- tempfile(fileext = ".jpeg")
+jpeg(tmp,
+     width=1200 , height=675)
+plot_dose_percentages("Canada")
+dev.off()
+
+
+post_tweet(format_tweet_text("Canada"), media = tmp)
+
+## lookup status_id
+my_timeline <- get_timeline(rtweet:::home_user())
+
+## ID for reply
+reply_id <- my_timeline$status_id[1]
+
+temp2 <- tempfile(fileext = ".jpeg")
+jpeg(temp2,
+     width=1200 , height=675)
+plot_dose_percentages("Alberta")
+dev.off()
+
+## post reply
+post_tweet(format_tweet_text("Alberta"),
+           media = temp2,
+           in_reply_to_status_id = reply_id)
  
