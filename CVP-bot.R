@@ -21,9 +21,6 @@ twitter_token <- create_token(
   access_token = access_token,
   access_secret = access_secret)
 
-post_tweet("This is a test tweet. 
-           ███░░░░░░░░░░░░░░░░░")
-
 
 # Load data from Health Canada
 url <- "https://health-infobase.canada.ca/src/data/covidLive/vaccination-coverage-map.csv"
@@ -33,53 +30,60 @@ download.file(url, tmp_filename)
 dat <- read_csv(tmp_filename)
 file.remove(tmp_filename)
 
+dat[is.na(dat)] <- "0" # Change all NA data to 0
+
+# Convert incorrectly typed columns from strings to numeric values
+dat <- suppressWarnings(transform(dat, numtotal_1dose = as.numeric(numtotal_1dose), 
+          numtotal_2doses = as.numeric(numtotal_2doses), 
+          proptotal_1dose = as.numeric(proptotal_1dose), 
+          proptotal_2doses = as.numeric(proptotal_2doses)))
+
+
 # Dates where data was received, starting at the most recent (index 1 is the latest data).
 dates <- rev(unique(dat$week_end))
 
 
 # Get latest Canada wide percent
-latest_percent <- dat[dat$prename == "Canada" & dat$week_end == dates[1], ]$proptotal_atleast1dose
-round(latest_percent, digits = 2)
+latest_percent_first <- round(dat[dat$prename == "Canada" & dat$week_end == dates[1], ]$proptotal_atleast1dose, digits = 0)
+latest_percent_both <- round(dat[dat$prename == "Canada" & dat$week_end == dates[1], ]$proptotal_2doses, digits = 0)
 
 
 
-# Round to nearest 5 for the progress bar
-mround <- function(x,base){
-  base*round(x/base)
+df <- data.frame(
+  "Received first dose" = latest_percent_first,
+  "Received both doses" = latest_percent_both, check.names = FALSE)
+
+df <- df %>%
+  gather(key, val) %>%
+  mutate(
+    key = factor(key, rev(unique(key))),
+    Total = 100)
+
+
+format_value <- function(key, val) {
+  sprintf(
+    "%s - %d%%",
+    key, val)
 }
 
-# Function that returns a progress bar based on the percent
 
-vis_progress <- function(percent){
-  
-  progress_bar <- "░░░░░░░░░░░░░░░░░░░░"
-  
-  i <- 1
-  j <- mround(percent, 5)/5
-  while (i <= j) {
-    substr(progress_bar, i, i) <- "█"
-    i = i + 1
-  }
-  
-  progress_bar
-  
-  
-}
-
-#
-vis_progress(latest_percent)
-
-
-
-
-
-
-
-
-
-
-
-
+ggplot(df, aes(key, val)) +
+  geom_col(fill = "green") +
+  geom_col(aes(y = Total), alpha = 0.5, colour = "black") +
+  geom_text(
+    aes(y = 5, label = format_value(key, val)),
+    hjust = 0,
+    fontface = "bold",
+    colour = "white") +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank())
 
 
 
