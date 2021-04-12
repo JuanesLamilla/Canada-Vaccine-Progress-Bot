@@ -90,16 +90,24 @@ plot_dose_percentages <- function(prv_name) {
       panel.background = element_blank())
   
 }
-
-jpeg(file="plot.jpeg",
+tmp <- tempfile(fileext = ".jpeg")
+jpeg(tmp,
      width=1200 , height=675)
 plot_dose_percentages("Alberta")
 dev.off()
 
-if (file.exists("plot.jpeg")) {
-  #Delete file if it exists
-  file.remove("plot.jpeg")
-}
+
+post_tweet("a tweet with media attachment", media = tmp)
+
+## lookup status_id
+my_timeline <- get_timeline(rtweet:::home_user())
+
+## ID for reply
+reply_id <- my_timeline$status_id[1]
+
+## post reply
+post_tweet("second in the thread",
+           in_reply_to_status_id = reply_id)
 
 
 
