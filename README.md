@@ -43,7 +43,7 @@ access_secret <- "YOUR TWITTER API SECRET ACESS TOKEN"
 
 To run the program, simply run CVP-bot.py whenever you need it to post the latest stats.
 
-As Health Canada updates their data online every friday, the program is scheduled to run on a Heroku server every Saturday at 12 am. 
+As Health Canada updates their data online every friday, the program is scheduled to run on a Heroku server as soon as new data is released every Friday at 12 pm Eastern Time. 
 
 ## Contributing
 Pull requests and issues are welcome. I am open to any new features that could add value.
