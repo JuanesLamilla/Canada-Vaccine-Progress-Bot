@@ -40,6 +40,3 @@ vignettes/*.pdf
 
 # API keys
 api_keys.csv
-
-# Temporary image used for plots
-plot.jpeg
